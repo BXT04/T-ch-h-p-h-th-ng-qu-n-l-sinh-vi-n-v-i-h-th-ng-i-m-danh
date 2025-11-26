@@ -52,7 +52,7 @@ CSV File → Producer → RabbitMQ → Validator → Transformer → MySQL
 
 1. **Clone repository:**
 ```bash
-git clone https://github.com/yourusername/student-integration-system.git
+git clone https://github.com/BXT04/T-ch-h-p-h-th-ng-qu-n-l-sinh-vi-n-v-i-h-th-ng-i-m-danh
 cd student-integration-system
 ```
 
