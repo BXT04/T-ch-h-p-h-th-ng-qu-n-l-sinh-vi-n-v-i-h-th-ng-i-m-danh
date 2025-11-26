@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  # RabbitMQ Message Broker
+  rabbitmq:
+    image: rabbitmq:3.12-management
+    container_name: student_rabbitmq
+    ports:
+      - "5672:5672"   # AMQP protocol
+      - "15672:15672" # Management UI
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin123
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - student_network
+
+  # MySQL Raw Database (dữ liệu lộn xộn)
+  mysql-raw:
+    image: mysql:8.0
+    container_name: student_mysql_raw
+    ports:
+      - "3307:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: student_raw_db
+      MYSQL_USER: raw_user
+      MYSQL_PASSWORD: raw_pass
+    volumes:
+      - mysql_raw_data:/var/lib/mysql
+      - ../sql/raw_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - student_network
+
+  # MySQL Clean Database (dữ liệu đã chuẩn hóa)
+  mysql-clean:
+    image: mysql:8.0
+    container_name: student_mysql_clean
+    ports:
+      - "3308:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root123
+      MYSQL_DATABASE: student_clean_db
+      MYSQL_USER: clean_user
+      MYSQL_PASSWORD: clean_pass
+    volumes:
+      - mysql_clean_data:/var/lib/mysql
+      - ../sql/clean_schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+    command: --default-authentication-plugin=mysql_native_password
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - student_network
+
+volumes:
+  rabbitmq_data:
+  mysql_raw_data:
+  mysql_clean_data:
+
+networks:
+  student_network:
+    driver: bridge
